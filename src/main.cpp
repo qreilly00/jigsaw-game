@@ -47,22 +47,6 @@ int main() {
         tmp.move(pieceSize, 0);
     }
 
-    std::vector<sf::RectangleShape> jigSawPieces;
-    tmp.setSize(sf::Vector2f(pieceSize, pieceSize));
-    tmp.setPosition(image.getPosition().x + image.getSize().x + 50, imageCover.getPosition().y);
-    tmp.setTexture(&texture);
-    tmp.setTextureRect(sf::IntRect(imageCover.getPosition().x - image.getPosition().x, imageCover.getPosition().y - image.getPosition().y, pieceSize, pieceSize));
-
-    for(int i = 0; i < pieceCountY; i++) {
-        for(int i = 0; i < pieceCountX; i++) {
-            jigSawPieces.push_back(tmp);
-            tmp.move(pieceSize, 0);
-            tmp.setTextureRect(sf::IntRect(tmp.getTextureRect().left + pieceSize, tmp.getTextureRect().top, pieceSize, pieceSize));
-        }
-        tmp.move(-(pieceSize * pieceCountX), pieceSize);
-        tmp.setTextureRect(sf::IntRect(imageCover.getPosition().x - image.getPosition().x, imageCover.getPosition().y - image.getPosition().y + (pieceSize * (i + 1)), pieceSize, pieceSize));
-    }
-
     std::vector<int> randomNumbers;
     int tmpRng = getRandomInt(0, jigSawPieces.size() - 1);
     randomNumbers.push_back(tmpRng);
@@ -72,7 +56,7 @@ int main() {
         bool noDupes = true;
         bool exitDupes = false;
 
-        while(exitDupes == false) {
+        while(exitDupes == false && randomNumbers.size() != jigSawPieces.size()) {
             for(int i = 0; i < randomNumbers.size(); i++) {
                 if(tmpRng == randomNumbers[i]) {
                     //tmpRng = getRandomInt(0, jigSawPieces.size() - 1);
@@ -83,23 +67,43 @@ int main() {
             if(noDupes == true) {
                 randomNumbers.push_back(tmpRng);
                 exitDupes = true;
+                break;
             } else {
                 tmpRng = getRandomInt(0, jigSawPieces.size() - 1);
                 noDupes = true;
             }
+
+            //std::cout << randomNumbers.size() << ", " << std::endl;
         }
     }
 
-    std::cout << randomNumbers.size() << ", " << jigSawPieces.size();
+    //std::cout << randomNumbers.size() << ", " << jigSawPieces.size();
 
-    std::vector<sf::RectangleShape> tmpPieces;
-    tmpPieces = jigSawPieces;
+    std::vector<sf::RectangleShape> tmpPieces(jigSawPieces.size());
 
-    /*for(int i = 0; i < jigSawPieces.size(); i++) {
+    for(int i = 0; i < jigSawPieces.size(); i++) {
         tmpPieces[randomNumbers[i]] = jigSawPieces[i];
-    }*/
 
-    //jigSawPieces = tmpPieces;
+        std::cout << randomNumbers[i] << std::endl;
+    }
+
+    jigSawPieces = tmpPieces;
+
+    std::vector<sf::RectangleShape> jigSawPieces;
+    tmp.setSize(sf::Vector2f(pieceSize, pieceSize));
+    tmp.setPosition(image.getPosition().x + image.getSize().x + 50, imageCover.getPosition().y);
+    tmp.setTexture(&texture);
+    tmp.setTextureRect(sf::IntRect(imageCover.getPosition().x - image.getPosition().x, imageCover.getPosition().y - image.getPosition().y, pieceSize, pieceSize));
+
+    for(int i = 0; i < pieceCountY; i++) {
+        for(int i = 0; i < pieceCountX; i++) {
+            jigSawPieces.push_back(tmp);
+            tmp.move(pieceSize + 10, 0);
+            tmp.setTextureRect(sf::IntRect(tmp.getTextureRect().left + pieceSize, tmp.getTextureRect().top, pieceSize, pieceSize));
+        }
+        tmp.move(-(pieceSize * pieceCountX) - pieceCountX * 10, pieceSize + 10);
+        tmp.setTextureRect(sf::IntRect(imageCover.getPosition().x - image.getPosition().x, imageCover.getPosition().y - image.getPosition().y + (pieceSize * (i + 1)), pieceSize, pieceSize));
+    }
 
     TimeUtil tu;
     tu.setTime();
@@ -131,7 +135,7 @@ int main() {
             window.draw(x);
         }
 
-        for(auto x : jigSawPieces) {
+        for(auto x : tmpPieces) {
             window.draw(x);
         }
 

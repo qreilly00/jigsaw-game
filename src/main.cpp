@@ -6,11 +6,11 @@ int getRandomInt(int x, int y);
 
 int main() {
     // Init and first image.
-    sf::RenderWindow window(sf::VideoMode(1500 , 1000), "SFML works!");
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(sf::VideoMode(1600 , 900), "SFML works!"/*, sf::Style::Fullscreen*/);
+    //window.setFramerateLimit(30);
 
     sf::Texture texture;
-    if (!texture.loadFromFile("../scenery.jpg")) {
+    if (!texture.loadFromFile("../scenery.png")) {
         std::cout << "Error with texture!" << std::endl;
     }
 
@@ -19,12 +19,12 @@ int main() {
     image.setPosition(50, 50);
     image.setSize(sf::Vector2f(image.getTexture()->getSize().x, image.getTexture()->getSize().y));
 
-    int pieceSize = 50;
+    int pieceSize = 100;
     int pieceCountX = image.getTexture()->getSize().x / pieceSize;
     int pieceCountY = image.getTexture()->getSize().y / pieceSize;
     //std::cout << "x: " << pieceCountX << " y: " << pieceCountY << std::endl;
 
-    // Image cover.
+    // Image cover (Black box over the original image).
     sf::RectangleShape imageCover(sf::Vector2f(pieceCountX * pieceSize, pieceCountY * pieceSize));
     imageCover.setFillColor(sf::Color::Black);
     imageCover.setPosition(image.getPosition().x + (image.getSize().x - imageCover.getSize().x) / 2, image.getPosition().y + (image.getSize().y - imageCover.getSize().y) / 2);
@@ -111,14 +111,42 @@ int main() {
     tu.setTime();
     int totalTime = 0;
 
+    // For mouse movement.
+    bool isMoving = 0;
+    int pieceToMove = 0;
     while (window.isOpen()) {
         tu.setTime();
         totalTime += tu.getTime();
 
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 window.close();
+        }
+
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if(isMoving == 0) {
+                for(int i = 0; i < jigSawPieces.size(); i++) {
+                    if(jigSawPieces[i].getGlobalBounds().contains(sf::Vector2f(sf::Mouse::getPosition(window)))) {
+                        isMoving = 1;
+                        pieceToMove = i;
+                        continue;
+                    }
+                }
+            } else {
+                jigSawPieces[pieceToMove].setPosition(sf::Mouse::getPosition(window).x - (jigSawPieces[pieceToMove].getSize().x - jigSawPieces[pieceToMove].getSize().y / 2), sf::Mouse::getPosition(window).y - (jigSawPieces[pieceToMove].getSize().y - jigSawPieces[pieceToMove].getSize().y / 2));
+                //std::cout << jigSawPieces[pieceToMove].getPosition().x << " " << jigSawPieces[pieceToMove].getPosition().y << std::endl;
+
+                for(int i = 0; i < imageCover.getSize().x / pieceSize; i++) {
+                    for(int j = 0; j < imageCover.getSize().x / pieceSize; j++) {
+                        if(sf::IntRect(imageCover.getPosition().x + (j * pieceSize), imageCover.getPosition().y + (i * pieceSize), pieceSize, pieceSize).contains(sf::Mouse::getPosition(window))) {
+                            jigSawPieces[pieceToMove].setPosition(imageCover.getPosition().x + (j * pieceSize), imageCover.getPosition().y + (i * pieceSize));
+                        }
+                    }
+                }
+            }
+        } else {
+            isMoving = 0;
         }
 
         // Controls.
